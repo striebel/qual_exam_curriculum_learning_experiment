@@ -13,8 +13,8 @@ N_SENT_EWT_DEV   =  2_001
 N_SENT_GUM_TRAIN =  8_548
 N_SENT_GUM_DEV   =  1_117
 
-N_BATCHES_PER_EPOCH = 64
-BATCH_SIZE        = 32
+N_BATCHES_PER_EPOCH = 100
+BATCH_SIZE          =  25
 
 @DataLoader.register("dependency_data_loader")
 class DependencyDataLoader(allennlp.data.dataloader.DataLoader):
@@ -68,13 +68,17 @@ class DependencyDataLoader(allennlp.data.dataloader.DataLoader):
             'n_deprels_norm'
         ]
         
-        name_param_pair = self._competence_function.split(',')
-        assert 2 == len(name_param_pair)
-        func_name = name_param_pair[0]
-        param     = int(name_param_pair[1])
+        # competence function -- curriculum duration
+        cf_cd = self._competence_function.split(',')
+        assert 2 == len(cf_cd)
+        cf = cf_cd[0]
+        cd = int(cf_cd[1])
         
-        assert func_name in ['linear']
-        assert 0 <= param
+        assert cf in ['linear', 'fancy']
+        
+        assert 0 <= cd
+        assert cd <= 80_000
+        assert 0 == cd % 2_500
         
         if len(dataset) == N_SENT_EWT_TRAIN:
             self._treebank = 'ewt'
@@ -150,7 +154,7 @@ class DependencyDataLoader(allennlp.data.dataloader.DataLoader):
             for _, idx in list_of_difficulty_idx_pairs:
                 self._ordered_dataset.append(dataset[idx])
             
-            if 'linear' == func_name:
+            if 'linear' == cf:
                 def get_linear_func(last_global_sample_idx):
                     def linear_func(
                         current_global_sample_idx,
@@ -162,12 +166,27 @@ class DependencyDataLoader(allennlp.data.dataloader.DataLoader):
                             assert 0 <= current_global_sample_idx
                             return current_global_sample_idx / last_global_sample_idx
                     return linear_func
-                self._competence_function = get_linear_func(param) # in this case, param is the
-                                                                   # index of the sample at which
-                                                                   # the curriculum will be
-                                                                   # complete
+                self._competence_function = get_linear_func(cd) # in this case, cd (curriculum duration) is the
+                                                                # index of the sample at which
+                                                                # the curriculum will be
+                                                                # complete
             else:
-                assert False
+                assert 'fancy' == cf
+                def get_fancy_func(last_global_sample_idx):
+                    def fancy_func(
+                        current_global_sample_idx,
+                        last_global_sample_idx=last_global_sample_idx
+                    ):
+                        if last_global_sample_idx <= current_global_sample_idx:
+                            return 1.0
+                        else:
+                            assert 0 <= current_global_sample_idx
+                            fraction = (current_global_sample_idx * ((1 - (0.01 ** 2)) / last_global_sample_idx) + (0.01 ** 2)) ** 0.5
+                            assert 0.0 <= fraction
+                            assert fraction <= 1.0
+                            return fraction
+                    return fancy_func
+                self._competence_function = get_fancy_func(cd)
 
 
     def get_next_batch(self) -> list:

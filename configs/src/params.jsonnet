@@ -2,9 +2,9 @@ local transformer_model = "bert-base-cased";
 local transformer_dim = 768;
 
 local max_len       =  512;
-local my_batch_size =   32;
-local my_patience   =    3;
-local my_num_epochs =   75;
+local my_batch_size =   25; //  32
+local my_patience   =    2; //   8
+local my_num_epochs =   60; // 192
 
 {
     "random_seed": 13370,

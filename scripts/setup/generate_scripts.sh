@@ -52,7 +52,7 @@ do
                 do
                     CONFIG_DIR_PATH=${REPO_DIR}/configs/bin/${tb}/${df}/${cf}/${cd}/${tr}
                     DATA_CONFIG_FILE_PATH=${CONFIG_DIR_PATH}/data.json
-                    MODEL_NAME=model_${tb}_${df}_${cf}_${cd}_${tr}
+                    MODEL_NAME=model__${tb}__${df}__${cf}__${cd}__${tr}
                     mkdir --parents ${CONFIG_DIR_PATH}
                     echo '{'                                                                                              > ${DATA_CONFIG_FILE_PATH} 
                     echo '    "'${MODEL_NAME}'" : {'                                                                     >> ${DATA_CONFIG_FILE_PATH} 
@@ -109,10 +109,15 @@ do
                     PREDICTIONS_DIR_PATH=${DATA_DIR}/treebanks/${tb}/predictions/${df}/${cf}/${cd}/${tr}
                     echo '# run predict on the test data'                                                     >> ${TRAIN_SCRIPT_FILE_PATH}  
                     echo 'mkdir --parents '${PREDICTIONS_DIR_PATH}                                            >> ${TRAIN_SCRIPT_FILE_PATH} 
-                    echo 'MODEL_DIR_NAME=`ls -1 '${REPO_DIR}'/logs/'${MODEL_NAME}' | tail -n 1`'              >> ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo 'MODEL_DIR_NAME=`ls -1 '${REPO_DIR}'/logs/'${MODEL_NAME}' | tail -n 1`'              >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo 'MODEL_DIR_PATH='${REPO_DIR}'/logs/'${MODEL_NAME}/'${MODEL_DIR_NAME}'                >> ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo 'MODEL_FILE_PATH=${MODEL_DIR_PATH}/model.tar.gz'                                     >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo 'echo "info: MODEL_DIR_NAME : ${MODEL_DIR_NAME}"'                                    >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo 'echo "info: MODEL_DIR_PATH : ${MODEL_DIR_PATH}"'                                    >> ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo 'echo "info: MODEL_FILE_PATH: ${MODEL_FILE_PATH}"'                                   >> ${TRAIN_SCRIPT_FILE_PATH} 
                     echo ${REPO_DIR}/${VENV_NAME}/bin/python'                                       \'        >> ${TRAIN_SCRIPT_FILE_PATH}
                     echo '    '${REPO_DIR}/parser/machamp-${MACHAMP_VERSION}/predict.py'            \'        >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo '        '${REPO_DIR}/logs/${MODEL_NAME}/'${MODEL_DIR_NAME}'/model.tar.gz' \'        >> ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo '        ${MODEL_FILE_PATH}                                                \'        >> ${TRAIN_SCRIPT_FILE_PATH} 
                     echo '        '${DATA_DIR}/treebanks/${tb}/clean/test.conllu'                   \'        >> ${TRAIN_SCRIPT_FILE_PATH}
                     echo '        '${PREDICTIONS_DIR_PATH}/test.conllu'                             \'        >> ${TRAIN_SCRIPT_FILE_PATH}
                     echo '        '--device' '0                                                               >> ${TRAIN_SCRIPT_FILE_PATH}
@@ -126,8 +131,8 @@ do
                     echo ''                                                                                   >> ${TRAIN_SCRIPT_FILE_PATH}
                     
                     echo '# save the per-epoch training progress before deleting the model dir'               >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo 'cp                                                                    \'            >> ${TRAIN_SCRIPT_FILE_PATH} 
-                    echo '    '${REPO_DIR}'/logs/'${MODEL_NAME}'/${MODEL_DIR_NAME}/metrics.json \'            >> ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo 'cp                                                                     \'           >> ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo '    '${REPO_DIR}'/logs/'${MODEL_NAME}'/${MODEL_DIR_NAME}/metrics*.json \'           >> ${TRAIN_SCRIPT_FILE_PATH} 
                     echo '    '${PREDICTIONS_DIR_PATH}/'                                         '            >> ${TRAIN_SCRIPT_FILE_PATH}
                     echo ''                                                                                   >> ${TRAIN_SCRIPT_FILE_PATH}
                     echo 'RETCODE=$?'                                                                         >> ${TRAIN_SCRIPT_FILE_PATH} 
@@ -139,7 +144,7 @@ do
                     echo ''                                                                                   >> ${TRAIN_SCRIPT_FILE_PATH}
                     
                     echo '# delete the model since we can not afford to keep hundreds of 850M models on disk' >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo 'rm -rf '${REPO_DIR}/logs/${MODEL_NAME}/'${MODEL_DIR_NAME}'                          >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo 'rm -rf ${MODEL_DIR_PATH}'                                                           >> ${TRAIN_SCRIPT_FILE_PATH}
                     echo ''                                                                                   >> ${TRAIN_SCRIPT_FILE_PATH} 
                     echo 'RETCODE=$?'                                                                         >> ${TRAIN_SCRIPT_FILE_PATH} 
                     echo 'if [ 0 -ne $RETCODE ]'                                                              >> ${TRAIN_SCRIPT_FILE_PATH} 
@@ -168,7 +173,7 @@ do
                 
                 TRAIN_SCRIPT_CD_DIR_PATH=${REPO_DIR}/scripts/train/${tb}/${df}/${cf}/${cd}
                 TRAIN_SCRIPT_CD_FILE_PATH=${TRAIN_SCRIPT_CD_DIR_PATH}/train.sh
-                echo '#!/usr/bin/env sh'                                 > ${TRAIN_SCRIPT_CF_FILE_PATH}
+                echo '#!/usr/bin/env sh'                                 > ${TRAIN_SCRIPT_CD_FILE_PATH}
                 echo ''                                                 >> ${TRAIN_SCRIPT_CD_FILE_PATH} 
                 echo '# training run'                                   >> ${TRAIN_SCRIPT_CD_FILE_PATH}
                 echo 'for tr in "a"'                                    >> ${TRAIN_SCRIPT_CD_FILE_PATH}
@@ -199,8 +204,8 @@ do
             chmod 700                                                  ${TRAIN_SCRIPT_CF_FILE_PATH}
             
             TRAIN_SBATCH_CF_FILE_PATH=${TRAIN_SCRIPT_CF_DIR_PATH}/train.sbatch
-            JOB_NAME=${tb}_${df}_${cf}
-            mkdir --parents ${REPO_DIR}/logs/${JOB_NAME}
+            JOB_NAME=${tb}__${df}__${cf}
+            mkdir --parents ${REPO_DIR}/logs/sbatch/${JOB_NAME}
             echo '#!/usr/bin/env sh'                                  > ${TRAIN_SBATCH_CF_FILE_PATH}
             echo '#SBATCH --account '${ACCOUNT}                      >> ${TRAIN_SBATCH_CF_FILE_PATH}
             echo '#SBATCH --job-name '${JOB_NAME}                    >> ${TRAIN_SBATCH_CF_FILE_PATH}
