@@ -86,10 +86,10 @@ def preprocess():
             assert 'dep_len' not in conllu_obj.metadata
             assert 'n_deprels' not in conllu_obj.metadata
             
-            conllu_obj.metadata['len_in_words'] = len_in_words
-            conllu_obj.metadata['len_in_chars'] = len_in_chars
-            conllu_obj.metadata['dep_len']      = dep_len
-            conllu_obj.metadata['n_deprels']    = len(deprels)
+            conllu_obj.metadata['len_in_words'] = str( len_in_words )
+            conllu_obj.metadata['len_in_chars'] = str( len_in_chars )
+            conllu_obj.metadata['dep_len']      = str( dep_len      )
+            conllu_obj.metadata['n_deprels']    = str( len(deprels) )
             
             #if 3 == conllu_obj_idx:
             #    print(conllu_obj.serialize())

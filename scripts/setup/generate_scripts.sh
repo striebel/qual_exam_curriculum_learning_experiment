@@ -74,129 +74,172 @@ do
                     TRAIN_SCRIPT_DIR_PATH=${REPO_DIR}/scripts/train/${tb}/${df}/${cf}/${cd}/${tr}
                     TRAIN_SCRIPT_FILE_PATH=${TRAIN_SCRIPT_DIR_PATH}/train.sh
                     mkdir --parents ${TRAIN_SCRIPT_DIR_PATH}
-                    echo '#!/usr/bin/env sh'                                                                    > ${TRAIN_SCRIPT_FILE_PATH} 
-                    echo ''                                                                                    >> ${TRAIN_SCRIPT_FILE_PATH} 
-                    echo '# build the config file'                                                             >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo ${REPO_DIR}/${VENV_NAME}/bin/python'                          \'                      >> ${TRAIN_SCRIPT_FILE_PATH} 
-                    echo '    '${REPO_DIR}/scripts/utils/translate_jsonnet_to_json.py' \'                      >> ${TRAIN_SCRIPT_FILE_PATH} 
-                    echo '        '${REPO_DIR}/configs/src/params.jsonnet'             \'                      >> ${TRAIN_SCRIPT_FILE_PATH} 
-                    echo '        '${PARAMS_CONFIG_FILE_PATH}                                                  >> ${TRAIN_SCRIPT_FILE_PATH} 
-                    echo ''                                                                                    >> ${TRAIN_SCRIPT_FILE_PATH} 
-                    echo 'RETCODE=$?'                                                                          >> ${TRAIN_SCRIPT_FILE_PATH} 
-                    echo 'if [ 0 -ne $RETCODE ]'                                                               >> ${TRAIN_SCRIPT_FILE_PATH} 
-                    echo 'then'                                                                                >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo '    echo "error: build config file failed"'                                          >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo '    exit $RETCODE'                                                                   >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo 'fi'                                                                                  >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo ''                                                                                    >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo '# train the model'                                                                   >> ${TRAIN_SCRIPT_FILE_PATH} 
-                    echo ${REPO_DIR}/${VENV_NAME}/bin/python'                                               \' >> ${TRAIN_SCRIPT_FILE_PATH} 
-                    echo '    '${REPO_DIR}/parser/machamp-${MACHAMP_VERSION}/train.py'                      \' >> ${TRAIN_SCRIPT_FILE_PATH} 
-                    echo '        '--name' '${MODEL_NAME}'                                                  \' >> ${TRAIN_SCRIPT_FILE_PATH} 
-                    echo '        '--dataset_config'      '${DATA_CONFIG_FILE_PATH}'                        \' >> ${TRAIN_SCRIPT_FILE_PATH} 
-                    echo '        '--parameters_config' '${PARAMS_CONFIG_FILE_PATH}'                        \' >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo '        '--device' '0'                                                             ' >> ${TRAIN_SCRIPT_FILE_PATH} 
-                    echo ''                                                                                    >> ${TRAIN_SCRIPT_FILE_PATH} 
-                    echo 'RETCODE=$?'                                                                          >> ${TRAIN_SCRIPT_FILE_PATH} 
-                    echo 'if [ 0 -ne $RETCODE ]'                                                               >> ${TRAIN_SCRIPT_FILE_PATH} 
-                    echo 'then'                                                                                >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo '    echo "error: training the model failed"'                                         >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo '    exit $RETCODE'                                                                   >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo 'fi'                                                                                  >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo ''                                                                                    >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo '# run predict on the test data'                                                      >> ${TRAIN_SCRIPT_FILE_PATH}  
-                    OUT_DIR_NAME=${DATA_DIR}/predictions/${domain}/${proportion}/${fold}
-                    echo 'mkdir --parents '${OUT_DIR_NAME}                                                     >> ${TRAIN_SCRIPT_FILE_PATH} 
-                    echo 'MODEL_DIR_NAME=`ls -1 '${REPO_DIR}'/logs/'${MODEL_NAME}' | tail -n 1`'               >> ${TRAIN_SCRIPT_FILE_PATH} 
-                    echo ${REPO_DIR}/${VENV_NAME}/bin/python'                                           \'     >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo '    '${REPO_DIR}/parser/machamp-${MACHAMP_VERSION}/predict.py'                \'     >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo '        '${REPO_DIR}/logs/${MODEL_NAME}/'${MODEL_DIR_NAME}'/model.tar.gz'     \'     >> ${TRAIN_SCRIPT_FILE_PATH} 
-                    echo '        '${DATA_DIR}/treebanks/folds/${fold}/test/${domain}.conllu'           \'     >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo '        '${OUT_DIR_NAME}/test.conllu'                                         \'     >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo '        '--device' '0                                                                >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo ''                                                                                    >> ${TRAIN_SCRIPT_FILE_PATH} 
-                    echo 'RETCODE=$?'                                                                          >> ${TRAIN_SCRIPT_FILE_PATH} 
-                    echo 'if [ 0 -ne $RETCODE ]'                                                               >> ${TRAIN_SCRIPT_FILE_PATH} 
-                    echo 'then'                                                                                >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo '    echo "error: predicting with the model failed"'                                  >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo '    exit $RETCODE'                                                                   >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo 'fi'                                                                                  >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo ''                                                                                    >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo '# save the per epoch training progress before deleting the model dir'                >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo 'mkdir --parents '${RSLT_DIR}/${domain}/${proportion}/${fold}                         >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo 'cp                                                                     \'            >> ${TRAIN_SCRIPT_FILE_PATH} 
-                    echo '    '${REPO_DIR}'/logs/'${MODEL_NAME}'/${MODEL_DIR_NAME}/metrics*.json \'            >> ${TRAIN_SCRIPT_FILE_PATH} 
-                    echo '    '${RSLT_DIR}/${domain}/${proportion}/${fold}/'                      '            >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo ''                                                                                    >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo 'RETCODE=$?'                                                                          >> ${TRAIN_SCRIPT_FILE_PATH} 
-                    echo 'if [ 0 -ne $RETCODE ]'                                                               >> ${TRAIN_SCRIPT_FILE_PATH} 
-                    echo 'then'                                                                                >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo '    echo "error: copying the per-epoch log files failed"'                            >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo '    exit $RETCODE'                                                                   >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo 'fi'                                                                                  >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo ''                                                                                    >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo '# delete the model since we can not afford to keep 2010 850M models on disk'         >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo 'rm -rf '${REPO_DIR}/logs/${MODEL_NAME}/'${MODEL_DIR_NAME}'                           >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo ''                                                                                    >> ${TRAIN_SCRIPT_FILE_PATH} 
-                    echo 'RETCODE=$?'                                                                          >> ${TRAIN_SCRIPT_FILE_PATH} 
-                    echo 'if [ 0 -ne $RETCODE ]'                                                               >> ${TRAIN_SCRIPT_FILE_PATH} 
-                    echo 'then'                                                                                >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo '    echo "error: deleting the model failed"'                                         >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo '    exit $RETCODE'                                                                   >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo 'fi'                                                                                  >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo ''                                                                                    >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo '# run the official ud eval script'                                                   >> ${TRAIN_SCRIPT_FILE_PATH} 
-                    echo ${REPO_DIR}/${VENV_NAME}/bin/python'                                           \'     >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo '    '${REPO_DIR}/scripts/ud_tools/eval.py'                                    \'     >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo '        '${DATA_DIR}/treebanks/folds/${fold}/test/${domain}.conllu'           \'     >> ${TRAIN_SCRIPT_FILE_PATH} 
-                    echo '        '${OUT_DIR_NAME}/test.conllu'                                         \'     >> ${TRAIN_SCRIPT_FILE_PATH} 
-                    echo '        > '${RSLT_DIR}/${domain}/${proportion}/${fold}/test.txt                      >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo ''                                                                                    >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo 'RETCODE=$?'                                                                          >> ${TRAIN_SCRIPT_FILE_PATH} 
-                    echo 'if [ 0 -ne $RETCODE ]'                                                               >> ${TRAIN_SCRIPT_FILE_PATH} 
-                    echo 'then'                                                                                >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo '    echo "error: running the official UD eval script failed"'                        >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo '    exit $RETCODE'                                                                   >> ${TRAIN_SCRIPT_FILE_PATH}
-                    echo 'fi'                                                                                  >> ${TRAIN_SCRIPT_FILE_PATH}
-                    chmod 700                                                                                     ${TRAIN_SCRIPT_FILE_PATH}
+                    echo '#!/usr/bin/env sh'                                                                   > ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo ''                                                                                   >> ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo '# build the config file'                                                            >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo ${REPO_DIR}/${VENV_NAME}/bin/python'                          \'                     >> ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo '    '${REPO_DIR}/scripts/utils/translate_jsonnet_to_json.py' \'                     >> ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo '        '${REPO_DIR}/configs/src/params.jsonnet'             \'                     >> ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo '        '${PARAMS_CONFIG_FILE_PATH}                                                 >> ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo ''                                                                                   >> ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo 'RETCODE=$?'                                                                         >> ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo 'if [ 0 -ne $RETCODE ]'                                                              >> ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo 'then'                                                                               >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo '    echo "error: build config file failed"'                                         >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo '    exit $RETCODE'                                                                  >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo 'fi'                                                                                 >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo ''                                                                                   >> ${TRAIN_SCRIPT_FILE_PATH}
+                    
+                    echo '# train the model'                                                                  >> ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo ${REPO_DIR}/${VENV_NAME}/bin/python'                          \'                     >> ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo '    '${REPO_DIR}/parser/machamp-${MACHAMP_VERSION}/train.py' \'                     >> ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo '        '--name' '${MODEL_NAME}'                             \'                     >> ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo '        '--dataset_config'      '${DATA_CONFIG_FILE_PATH}'   \'                     >> ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo '        '--parameters_config' '${PARAMS_CONFIG_FILE_PATH}'   \'                     >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo '        '--device' '0'                                        '                     >> ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo ''                                                                                   >> ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo 'RETCODE=$?'                                                                         >> ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo 'if [ 0 -ne $RETCODE ]'                                                              >> ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo 'then'                                                                               >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo '    echo "error: training the model failed"'                                        >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo '    exit $RETCODE'                                                                  >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo 'fi'                                                                                 >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo ''                                                                                   >> ${TRAIN_SCRIPT_FILE_PATH}
+                    
+                    PREDICTIONS_DIR_PATH=${DATA_DIR}/treebanks/${tb}/predictions/${df}/${cf}/${cd}/${tr}
+                    echo '# run predict on the test data'                                                     >> ${TRAIN_SCRIPT_FILE_PATH}  
+                    echo 'mkdir --parents '${PREDICTIONS_DIR_PATH}                                            >> ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo 'MODEL_DIR_NAME=`ls -1 '${REPO_DIR}'/logs/'${MODEL_NAME}' | tail -n 1`'              >> ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo ${REPO_DIR}/${VENV_NAME}/bin/python'                                       \'        >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo '    '${REPO_DIR}/parser/machamp-${MACHAMP_VERSION}/predict.py'            \'        >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo '        '${REPO_DIR}/logs/${MODEL_NAME}/'${MODEL_DIR_NAME}'/model.tar.gz' \'        >> ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo '        '${DATA_DIR}/treebanks/${tb}/clean/test.conllu'                   \'        >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo '        '${PREDICTIONS_DIR_PATH}/test.conllu'                             \'        >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo '        '--device' '0                                                               >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo ''                                                                                   >> ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo 'RETCODE=$?'                                                                         >> ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo 'if [ 0 -ne $RETCODE ]'                                                              >> ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo 'then'                                                                               >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo '    echo "error: predicting with the model failed"'                                 >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo '    exit $RETCODE'                                                                  >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo 'fi'                                                                                 >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo ''                                                                                   >> ${TRAIN_SCRIPT_FILE_PATH}
+                    
+                    echo '# save the per-epoch training progress before deleting the model dir'               >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo 'cp                                                                    \'            >> ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo '    '${REPO_DIR}'/logs/'${MODEL_NAME}'/${MODEL_DIR_NAME}/metrics.json \'            >> ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo '    '${PREDICTIONS_DIR_PATH}/'                                         '            >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo ''                                                                                   >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo 'RETCODE=$?'                                                                         >> ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo 'if [ 0 -ne $RETCODE ]'                                                              >> ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo 'then'                                                                               >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo '    echo "error: copying the per-epoch log files failed"'                           >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo '    exit $RETCODE'                                                                  >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo 'fi'                                                                                 >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo ''                                                                                   >> ${TRAIN_SCRIPT_FILE_PATH}
+                    
+                    echo '# delete the model since we can not afford to keep hundreds of 850M models on disk' >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo 'rm -rf '${REPO_DIR}/logs/${MODEL_NAME}/'${MODEL_DIR_NAME}'                          >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo ''                                                                                   >> ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo 'RETCODE=$?'                                                                         >> ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo 'if [ 0 -ne $RETCODE ]'                                                              >> ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo 'then'                                                                               >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo '    echo "error: deleting the model failed"'                                        >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo '    exit $RETCODE'                                                                  >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo 'fi'                                                                                 >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo ''                                                                                   >> ${TRAIN_SCRIPT_FILE_PATH}
+                    
+                    echo '# run the official ud eval script'                                                  >> ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo ${REPO_DIR}/${VENV_NAME}/bin/python'                                           \'    >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo '    '${REPO_DIR}/scripts/ud_tools/eval.py'                                    \'    >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo '        '${DATA_DIR}/treebanks/${tb}/clean/test.conllu'                       \'    >> ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo '        '${PREDICTIONS_DIR_PATH}/test.conllu'                                 \'    >> ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo '        > '${PREDICTIONS_DIR_PATH}/test.txt                                         >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo ''                                                                                   >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo 'RETCODE=$?'                                                                         >> ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo 'if [ 0 -ne $RETCODE ]'                                                              >> ${TRAIN_SCRIPT_FILE_PATH} 
+                    echo 'then'                                                                               >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo '    echo "error: running the official UD eval script failed"'                       >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo '    exit $RETCODE'                                                                  >> ${TRAIN_SCRIPT_FILE_PATH}
+                    echo 'fi'                                                                                 >> ${TRAIN_SCRIPT_FILE_PATH}
+                    
+                    chmod 700                                                                                    ${TRAIN_SCRIPT_FILE_PATH}
                 done
+                
+                TRAIN_SCRIPT_CD_DIR_PATH=${REPO_DIR}/scripts/train/${tb}/${df}/${cf}/${cd}
+                TRAIN_SCRIPT_CD_FILE_PATH=${TRAIN_SCRIPT_CD_DIR_PATH}/train.sh
+                echo '#!/usr/bin/env sh'                                 > ${TRAIN_SCRIPT_CF_FILE_PATH}
+                echo ''                                                 >> ${TRAIN_SCRIPT_CD_FILE_PATH} 
+                echo '# training run'                                   >> ${TRAIN_SCRIPT_CD_FILE_PATH}
+                echo 'for tr in "a"'                                    >> ${TRAIN_SCRIPT_CD_FILE_PATH}
+                echo 'do'                                               >> ${TRAIN_SCRIPT_CD_FILE_PATH}
+                echo '    '${TRAIN_SCRIPT_CD_DIR_PATH}/'${tr}'/train.sh >> ${TRAIN_SCRIPT_CD_FILE_PATH}
+                echo 'done'                                             >> ${TRAIN_SCRIPT_CD_FILE_PATH}
+                chmod 700                                                  ${TRAIN_SCRIPT_CD_FILE_PATH}  
             done
             
-            echo '#!/usr/bin/env sh'                                                     > ${REPO_DIR}/scripts/train/${domain}/${proportion}.sh
-            echo ''                                                                     >> ${REPO_DIR}/scripts/train/${domain}/${proportion}.sh
-            echo 'for fold in "a" "b" "c" "d" "e" "f" "g" "h" "i" "j"'                  >> ${REPO_DIR}/scripts/train/${domain}/${proportion}.sh 
-            echo 'do'                                                                   >> ${REPO_DIR}/scripts/train/${domain}/${proportion}.sh
-            echo '    '${REPO_DIR}/scripts/train/${domain}/${proportion}/'${fold}'.sh   >> ${REPO_DIR}/scripts/train/${domain}/${proportion}.sh
-            echo 'done'                                                                 >> ${REPO_DIR}/scripts/train/${domain}/${proportion}.sh
-            chmod 700                                                                      ${REPO_DIR}/scripts/train/${domain}/${proportion}.sh
+            TRAIN_SCRIPT_CF_DIR_PATH=${REPO_DIR}/scripts/train/${tb}/${df}/${cf}
+            TRAIN_SCRIPT_CF_FILE_PATH=${TRAIN_SCRIPT_CF_DIR_PATH}/train.sh
+            echo '#!/usr/bin/env sh'                                 > ${TRAIN_SCRIPT_CF_FILE_PATH}
+            echo ''                                                 >> ${TRAIN_SCRIPT_CF_FILE_PATH} 
+            echo '# curriculum duration'                            >> ${TRAIN_SCRIPT_CF_FILE_PATH}
+            echo 'for cd in \'                                      >> ${TRAIN_SCRIPT_CF_FILE_PATH}
+            echo '    "00_000" "02_500" "05_000" "07_500" \'        >> ${TRAIN_SCRIPT_CF_FILE_PATH}
+            echo '    "10_000" "12_500" "15_000" "17_500" \'        >> ${TRAIN_SCRIPT_CF_FILE_PATH}
+            echo '    "20_000" "22_500" "25_000" "27_500" \'        >> ${TRAIN_SCRIPT_CF_FILE_PATH}
+            echo '    "30_000" "32_500" "35_000" "37_500" \'        >> ${TRAIN_SCRIPT_CF_FILE_PATH}
+            echo '    "40_000" "42_500" "45_000" "47_500" \'        >> ${TRAIN_SCRIPT_CF_FILE_PATH}
+            echo '    "50_000" "52_500" "55_000" "57_500" \'        >> ${TRAIN_SCRIPT_CF_FILE_PATH}
+            echo '    "60_000" "62_500" "65_000" "67_500" \'        >> ${TRAIN_SCRIPT_CF_FILE_PATH}
+            echo '    "70_000" "72_500" "75_000" "77_500" \'        >> ${TRAIN_SCRIPT_CF_FILE_PATH}
+            echo '    "80_000"'                                     >> ${TRAIN_SCRIPT_CF_FILE_PATH}
+            echo 'do'                                               >> ${TRAIN_SCRIPT_CF_FILE_PATH}
+            echo '    '${TRAIN_SCRIPT_CF_DIR_PATH}/'${cd}'/train.sh >> ${TRAIN_SCRIPT_CF_FILE_PATH}
+            echo 'done'                                             >> ${TRAIN_SCRIPT_CF_FILE_PATH}
+            chmod 700                                                  ${TRAIN_SCRIPT_CF_FILE_PATH}
             
-            mkdir --parents ${REPO_DIR}/logs/sbatch
-            echo '#!/usr/bin/env sh'                                                     > ${REPO_DIR}/scripts/train/${domain}/${proportion}.sbatch
-            echo '#SBATCH --account '${ACCOUNT}                                         >> ${REPO_DIR}/scripts/train/${domain}/${proportion}.sbatch
-            echo '#SBATCH --job-name '${proportion}${domain}                            >> ${REPO_DIR}/scripts/train/${domain}/${proportion}.sbatch
-            echo '#SBATCH --partition gpu'                                              >> ${REPO_DIR}/scripts/train/${domain}/${proportion}.sbatch
-            echo '#SBATCH --output '${REPO_DIR}/logs/sbatch/${MODEL_NAME}.out           >> ${REPO_DIR}/scripts/train/${domain}/${proportion}.sbatch
-            echo '#SBATCH --error  '${REPO_DIR}/logs/sbatch/${MODEL_NAME}.err           >> ${REPO_DIR}/scripts/train/${domain}/${proportion}.sbatch
-            echo '#SBATCH --mail-type=ALL'                                              >> ${REPO_DIR}/scripts/train/${domain}/${proportion}.sbatch
-            echo '#SBATCH --mail-user=jstrieb@indiana.edu'                              >> ${REPO_DIR}/scripts/train/${domain}/${proportion}.sbatch
-            echo '#SBATCH --gres=gpu:1'                                                 >> ${REPO_DIR}/scripts/train/${domain}/${proportion}.sbatch
-            echo '#SBATCH --nodes=1'                                                    >> ${REPO_DIR}/scripts/train/${domain}/${proportion}.sbatch
-            echo '#SBATCH --time=1-00:00:00'                                            >> ${REPO_DIR}/scripts/train/${domain}/${proportion}.sbatch
-            echo '#SBATCH --mem=128G'                                                   >> ${REPO_DIR}/scripts/train/${domain}/${proportion}.sbatch
-            echo '#SBATCH --cpus-per-task=1'                                            >> ${REPO_DIR}/scripts/train/${domain}/${proportion}.sbatch
-            echo 'module load python/3.9.8'                                             >> ${REPO_DIR}/scripts/train/${domain}/${proportion}.sbatch
-            echo 'srun '${REPO_DIR}/scripts/train/${domain}/${proportion}.sh            >> ${REPO_DIR}/scripts/train/${domain}/${proportion}.sbatch
+            TRAIN_SBATCH_CF_FILE_PATH=${TRAIN_SCRIPT_CF_DIR_PATH}/train.sbatch
+            JOB_NAME=${tb}_${df}_${cf}
+            mkdir --parents ${REPO_DIR}/logs/${JOB_NAME}
+            echo '#!/usr/bin/env sh'                                  > ${TRAIN_SBATCH_CF_FILE_PATH}
+            echo '#SBATCH --account '${ACCOUNT}                      >> ${TRAIN_SBATCH_CF_FILE_PATH}
+            echo '#SBATCH --job-name '${JOB_NAME}                    >> ${TRAIN_SBATCH_CF_FILE_PATH}
+            echo '#SBATCH --partition gpu'                           >> ${TRAIN_SBATCH_CF_FILE_PATH}
+            echo '#SBATCH --output '${REPO_DIR}/logs/${JOB_NAME}/out >> ${TRAIN_SBATCH_CF_FILE_PATH}
+            echo '#SBATCH --error  '${REPO_DIR}/logs/${JOB_NAME}/err >> ${TRAIN_SBATCH_CF_FILE_PATH}
+            echo '#SBATCH --mail-type=ALL'                           >> ${TRAIN_SBATCH_CF_FILE_PATH}
+            echo '#SBATCH --mail-user=jstrieb@indiana.edu'           >> ${TRAIN_SBATCH_CF_FILE_PATH}
+            echo '#SBATCH --gres=gpu:1'                              >> ${TRAIN_SBATCH_CF_FILE_PATH}
+            echo '#SBATCH --nodes=1'                                 >> ${TRAIN_SBATCH_CF_FILE_PATH}
+            echo '#SBATCH --time=1-00:00:00'                         >> ${TRAIN_SBATCH_CF_FILE_PATH}
+            echo '#SBATCH --mem=128G'                                >> ${TRAIN_SBATCH_CF_FILE_PATH}
+            echo '#SBATCH --cpus-per-task=1'                         >> ${TRAIN_SBATCH_CF_FILE_PATH}
+            echo 'module load python/3.9.8'                          >> ${TRAIN_SBATCH_CF_FILE_PATH}
+            echo 'srun '${TRAIN_SCRIPT_CF_FILE_PATH}                 >> ${TRAIN_SBATCH_CF_FILE_PATH}
         done
         
-        echo '#!/usr/bin/env sh'                                                                      > ${REPO_DIR}/scripts/train/${domain}_dispatch.sh 
-        echo ''                                                                                      >> ${REPO_DIR}/scripts/train/${domain}_dispatch.sh 
-        echo 'for proportion in "000" "005" "010" "015" "020" "025" "030" "035" "040" "045"       \' >> ${REPO_DIR}/scripts/train/${domain}_dispatch.sh 
-        echo '                  "050" "055" "060" "065" "070" "075" "080" "085" "090" "095" "100"  ' >> ${REPO_DIR}/scripts/train/${domain}_dispatch.sh
-        echo 'do'                                                                                    >> ${REPO_DIR}/scripts/train/${domain}_dispatch.sh
-        echo '    'sbatch ${REPO_DIR}/scripts/train/${domain}/'${proportion}'.sbatch                 >> ${REPO_DIR}/scripts/train/${domain}_dispatch.sh 
-        echo 'done'                                                                                  >> ${REPO_DIR}/scripts/train/${domain}_dispatch.sh 
-        chmod 700                                                                                       ${REPO_DIR}/scripts/train/${domain}_dispatch.sh
+        TRAIN_SCRIPT_DF_DIR_PATH=${REPO_DIR}/scripts/train/${tb}/${df}
+        TRAIN_SCRIPT_DF_FILE_PATH=${TRAIN_SCRIPT_DF_DIR_PATH}/train.sh
+        echo '#!/usr/bin/env sh'                                              > ${TRAIN_SCRIPT_DF_FILE_PATH}
+        echo 'for cf in "linear" "fancy"'                                    >> ${TRAIN_SCRIPT_DF_FILE_PATH} 
+        echo 'do'                                                            >> ${TRAIN_SCRIPT_DF_FILE_PATH}
+        echo '    'sbatch' '${TRAIN_SCRIPT_DF_DIR_PATH}/'${cf}'/train.sbatch >> ${TRAIN_SCRIPT_DF_FILE_PATH}
+        echo 'done'                                                          >> ${TRAIN_SCRIPT_DF_FILE_PATH}
+        chmod 700                                                               ${TRAIN_SCRIPT_DF_FILE_PATH}
     done
+    
+    TRAIN_SCRIPT_TB_DIR_PATH=${REPO_DIR}/scripts/train/${tb}
+    TRAIN_SCRIPT_TB_FILE_PATH=${TRAIN_SCRIPT_TB_DIR_PATH}/train.sh
+    echo '#!/usr/bin/env sh'                                 > ${TRAIN_SCRIPT_TB_FILE_PATH}
+    echo ''                                                 >> ${TRAIN_SCRIPT_TB_FILE_PATH}
+    echo 'for df in                           \'            >> ${TRAIN_SCRIPT_TB_FILE_PATH} 
+    echo '    "len_in_words" "len_in_chars"   \'            >> ${TRAIN_SCRIPT_TB_FILE_PATH}
+    echo '    "dep_len"      "dep_len_norm"   \'            >> ${TRAIN_SCRIPT_TB_FILE_PATH}
+    echo '    "n_deprels"    "n_deprels_norm"  '            >> ${TRAIN_SCRIPT_TB_FILE_PATH}  
+    echo 'do'                                               >> ${TRAIN_SCRIPT_TB_FILE_PATH} 
+    echo '    '${TRAIN_SCRIPT_TB_DIR_PATH}/'${df}'/train.sh >> ${TRAIN_SCRIPT_TB_FILE_PATH}  
+    echo 'done'                                             >> ${TRAIN_SCRIPT_TB_FILE_PATH}  
+    chmod 700                                                  ${TRAIN_SCRIPT_TB_FILE_PATH}
 done
 
 

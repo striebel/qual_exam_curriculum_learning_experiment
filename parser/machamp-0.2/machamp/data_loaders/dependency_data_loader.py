@@ -114,11 +114,16 @@ class DependencyDataLoader(allennlp.data.dataloader.DataLoader):
                 self._idx_to_attrs.append(dict())
                 assert self._idx_to_attrs[idx] == self._idx_to_attrs[-1]
                 
-                len_in_words   = instance.conllu_obj.metadata['len_in_words']
-                len_in_chars   = instance.conllu_obj.metadata['len_in_chars']
-                dep_len        = instance.conllu_obj.metadata['dep_len']
+                len_in_words   = int( instance.conllu_obj.metadata['len_in_words'] )
+                len_in_chars   = int( instance.conllu_obj.metadata['len_in_chars'] )
+                try:
+                    dep_len        = int( instance.conllu_obj.metadata['dep_len']      )
+                except KeyError:
+                    import code
+                    code.interact(local=locals())
+                    sys.exit(-1)
                 dep_len_norm   = dep_len / len_in_words
-                n_deprels      = instance.conllu_obj.metadata['n_deprels']
+                n_deprels      = int( instance.conllu_obj.metadata['n_deprels']    )
                 n_deprels_norm = n_deprels / len_in_words
                 
                 self._idx_to_attrs[idx]['len_in_words']   = len_in_words
@@ -139,25 +144,28 @@ class DependencyDataLoader(allennlp.data.dataloader.DataLoader):
                 assert 'dev' == self._split
                 pass
             
-        if 'train' == self.split:
+        if 'train' == self._split:
             self._ordered_dataset = list()
             list_of_difficulty_idx_pairs.sort()
             for _, idx in list_of_difficulty_idx_pairs:
                 self._ordered_dataset.append(dataset[idx])
             
             if 'linear' == func_name:
-                def get_linear_func(last_global_batch_idx):
+                def get_linear_func(last_global_sample_idx):
                     def linear_func(
-                        current_global_batch_idx,
-                        last_global_batch_idx=last_global_batch_idx
+                        current_global_sample_idx,
+                        last_global_sample_idx=last_global_sample_idx
                     ):
-                        if last_global_batch_idx <= current_global_batch_idx:
+                        if last_global_sample_idx <= current_global_sample_idx:
                             return 1.0
                         else:
-                            assert 0 <= current_global_batch_idx
-                            return current_global_batch_idx / last_global_batch_idx
+                            assert 0 <= current_global_sample_idx
+                            return current_global_sample_idx / last_global_sample_idx
                     return linear_func
-                self._competence_function = get_linear_func(param)
+                self._competence_function = get_linear_func(param) # in this case, param is the
+                                                                   # index of the sample at which
+                                                                   # the curriculum will be
+                                                                   # complete
             else:
                 assert False
 
@@ -166,6 +174,7 @@ class DependencyDataLoader(allennlp.data.dataloader.DataLoader):
         if 'dev' == self._split:
             assert not hasattr(self, '_epoch_batch_idx')
             assert not hasattr(self, '_global_batch_idx')
+            assert not hasattr(self, '_ordered_dataset')
             
             init = False
             if (
@@ -179,13 +188,13 @@ class DependencyDataLoader(allennlp.data.dataloader.DataLoader):
                 init = True
             if 0 == len(self._batches):
                 batch = list()
-                for idx in range(len(self._dataset)):
+                for idx in range(len(self._unordered_dataset)):
                     if BATCH_SIZE <= len(batch):
                         assert len(batch) == BATCH_SIZE
                         self._batches.append(batch)
                         batch = list()
                     assert len(batch) < BATCH_SIZE
-                    batch.append(self._dataset[idx])
+                    batch.append(self._unordered_dataset[idx])
                 if 0 < len(batch):
                     assert len(batch) <= BATCH_SIZE
                     self._batches.append(batch)
@@ -226,7 +235,9 @@ class DependencyDataLoader(allennlp.data.dataloader.DataLoader):
                 assert self._epoch_batch_idx < N_BATCHES_PER_EPOCH
                 assert 0 <= self._global_batch_idx
                 
-                fraction = self._competence_function(self._global_batch_idx)
+                fraction = self._competence_function(
+                    self._global_batch_idx * BATCH_SIZE
+                )
                 assert 0.0 <= fraction
                 assert fraction <= 1.0
                 
@@ -244,10 +255,10 @@ class DependencyDataLoader(allennlp.data.dataloader.DataLoader):
         
 
     def __len__(self) -> int:
-        if 'train' == self.split:
+        if 'train' == self._split:
             return N_BATCHES_PER_EPOCH
         else:
-            assert 'dev' == self.split:
+            assert 'dev' == self._split
             return math.ceil(len(self._unordered_dataset) / BATCH_SIZE)
     
 

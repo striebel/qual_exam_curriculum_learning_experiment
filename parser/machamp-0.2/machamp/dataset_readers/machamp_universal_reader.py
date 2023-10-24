@@ -544,9 +544,9 @@ class MachampUniversalReader(DatasetReader):
         task2type: Dict[str, str],
         dataset: str,
         dataset_embeds: List[str] = [],
-        conllu_obj,
-        difficulty_function,
-        competence_function
+        conllu_obj = None,
+        difficulty_function = None,
+        competence_function = None
         #domain     = None,
         #proportion = None,
         #fold       = None
