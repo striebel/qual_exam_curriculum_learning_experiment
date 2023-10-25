@@ -2,3 +2,6 @@ venv*/
 configs/bin/
 logs/
 scripts/train
+scripts/archive_and_compress/logs/
+scripts/archive_and_compress/results.bash
+scripts/archive_and_compress/results.sbatch
