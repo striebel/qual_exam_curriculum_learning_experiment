@@ -1,4 +1,4 @@
-# Curriculum learning qual experiment
+# Qual exam curriculum learning experiment
 
 Instructions for running the experiment:
 
