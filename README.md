@@ -7,6 +7,7 @@ Instructions for running the experiment:
 * <a href='#environment'>Environment</a>
 * <a href='#data'>Data</a>
 * <a href='#train-and-predict'>Train and predict</a>
+* <a href='#monitor-progress'>Monitor progress</a>
 * <a href='#evaluate'>Evaluate</a>
 * <a href='#visualize-results'>Visualize results</a>
 
@@ -40,6 +41,10 @@ srun \
     --time=12:00:00 \
     --pty bash
 ```
+However, when eventually dispatching sbatch scripts,
+make sure that this is done from a login node, because
+doing it from a compute node will fail with a potentially difficult
+to debug error message.
 
 ### Create venv and install dependencies
 
@@ -153,7 +158,7 @@ scripts/train/dispatch_all.sh
 in order to submit all of the jobs to Slurm for training and running predict
 on the test data.
 
-If debugging debugging is required, first try executing one of the individual
+If debugging is required, first try executing one of the individual
 model scripts; for example:
 ```sh
 scripts/train/answer/010/a.sh
@@ -182,13 +187,29 @@ And then all the jobs can be submitted with the already mentioned script:
 scripts/train/dispatch_all.sh
 ```
 
+<h2 id='monitor-progress'>Monitor progress</h2>
+
+In total 2,100 models must be trained.
+Once the `dispatch_all.sh` script has been executed,
+training progress can be monitored by running:
+```sh
+scripts/eval/eval_c.sh
+```
+This script will first check how many of the models are done training
+and print that statistic,
+and the script will also prompt you to press return to continue.
+If all the models have all trained, press return;
+otherwise press Ctrl+c to exit the script.
+
 <h2 id='evaluate'>Evaluate</h2>
 
 Execute
 ```sh
 scripts/eval/eval_c.sh
 ```
-followed by
+(this is an interactive script, see the previous section).
+
+Then execute
 ```sh
 scripts/eval/eval_d.sh
 ```
