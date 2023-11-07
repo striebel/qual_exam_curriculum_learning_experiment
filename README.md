@@ -43,14 +43,14 @@ srun \
 ```
 However, when eventually dispatching sbatch scripts,
 make sure that this is done from a login node, because
-doing it from a compute node will fail with a potentially difficult
-to debug error message.
+doing it from a compute node will fail with a potentially
+difficult-to-debug error message.
 
 ### Create venv and install dependencies
 
 Clone the experiment repository:
 ```sh
-git clone git@github.com:striebel/curriculum_learning_qual_experiment.git
+git clone git@github.com:striebel/qual_exam_curriculum_learning_experiment.git
 ```
 
 Next, via
